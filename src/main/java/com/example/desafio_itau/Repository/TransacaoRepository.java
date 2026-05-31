@@ -1,6 +1,7 @@
 package com.example.desafio_itau.Repository;
 
 import com.example.desafio_itau.Model.Transacao;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
@@ -21,16 +22,12 @@ public class TransacaoRepository {
     public List<Transacao> findByDataHoraAfter(OffsetDateTime dataHora){
 
 
-
         return this.listaTransacoes.stream()
-                .filter(transacao -> transacao.getDataHora().isAfter(dataHora))
+                .filter(transacao -> transacao.getDataHora().isAfter(dataHora)|| transacao.getDataHora().equals(dataHora))
                 .collect(Collectors.toList());
-
     }
 
-    public void limparTransacoes(){
 
-    }
 
     public void apagarDados(){
         listaTransacoes.clear();

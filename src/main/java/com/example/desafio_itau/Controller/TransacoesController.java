@@ -1,14 +1,17 @@
 package com.example.desafio_itau.Controller;
 
 import com.example.desafio_itau.DTO.TransacaoDTO;
+import com.example.desafio_itau.Docs.TransacaoControllerDoc;
 import com.example.desafio_itau.Service.TransacaoService;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+@Slf4j
 @RestController
 @RequestMapping("/transacao")
-public class TransacoesController {
+public class TransacoesController implements TransacaoControllerDoc {
 
     private final TransacaoService transacaoService;
 
@@ -23,10 +26,11 @@ public class TransacoesController {
             transacaoService.addTransacao(transacaoDTO);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         }catch (IllegalArgumentException e) {
+            log.error("Erro nos dados : {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
 
         }catch (Exception e){
-
+            log.error("Json Invalido", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 
 
@@ -39,6 +43,8 @@ public class TransacoesController {
 
     @DeleteMapping
     public ResponseEntity deletarTransacoes(){
+
+        log.info("Lista de Transacoes deletada");
 
          transacaoService.deletarTransacoes();
          return ResponseEntity.status(HttpStatus.OK).build();

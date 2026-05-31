@@ -6,12 +6,13 @@ import com.example.desafio_itau.DTO.TransacaoDTO;
 import com.example.desafio_itau.DTO.TransacaoMapper;
 import com.example.desafio_itau.Model.Transacao;
 import com.example.desafio_itau.Repository.TransacaoRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
-
+@Slf4j
 @Service
 public class TransacaoService {
 
@@ -27,20 +28,23 @@ public class TransacaoService {
 
     private  void validarTransacao(TransacaoDTO transacaoDTO){
 
-        if(transacaoDTO.getValor().compareTo(BigDecimal.ZERO)<0){
-             throw new IllegalArgumentException("Erro: transacao nao e valida, transacao tem que ser um valor maior que zero");
 
+        if(transacaoDTO.getValor().compareTo(BigDecimal.ZERO)<0){
+
+             throw new IllegalArgumentException("Valor nao pode ser negativo");
         }
 
         if(transacaoDTO.getDataHora().isAfter(OffsetDateTime.now())) {
-            throw new IllegalArgumentException("Erro: na data de transacao");
+
+            throw new IllegalArgumentException("Data de Transacao invalida");
         }
+
         if(transacaoDTO.getValor()==null ){
-            throw new IllegalArgumentException("Erro: Valor da transação é obrigatório");
+            throw new IllegalArgumentException("Valor da transação esta null");
         }
 
         if(transacaoDTO.getDataHora()==null){
-            throw new IllegalArgumentException("Erro: Data da transação é obrigatório");
+            throw new IllegalArgumentException("Data da transação esta null");
         }
 
     }
@@ -49,6 +53,7 @@ public class TransacaoService {
         validarTransacao(transacaoDTO);
         Transacao transacao = transacaoMapper.map(transacaoDTO);
         transacaoRepository.save(transacao);
+        log.info("Transacao Salva com sucesso!!!");
 
     }
 
@@ -59,6 +64,7 @@ public class TransacaoService {
 
     public EstatisticaDTO estatisticasTransacao(){
 
+    log.info("Listando as Transacoes dos ultimos {} segundos",estastisticaProperties.seconds());
         final var horaInicial = OffsetDateTime
                 .now().
                 minusSeconds(estastisticaProperties.seconds());
@@ -67,19 +73,24 @@ public class TransacaoService {
 
          if (lista.isEmpty()){
              EstatisticaDTO estatisticaDTO = new EstatisticaDTO(0L,0.0,0.0,0.0,0.0);
+             log.warn("Nenhuma transação encontrada para o período");
              return estatisticaDTO;
+
         }
-             var sumary = lista.stream()
-                     .map(Transacao::getValor)
-                     .mapToDouble(BigDecimal::doubleValue)
+             var summary = lista.stream()
+                     .mapToDouble(t->t.getValor().doubleValue())
                      .summaryStatistics();
 
-             EstatisticaDTO estatisticaDTO = new EstatisticaDTO(sumary.getCount(),
-                     sumary.getSum(),
-                     sumary.getAverage(),
-                     sumary.getMin(),
-                     sumary.getMax());
+             EstatisticaDTO estatisticaDTO = new EstatisticaDTO(summary.getCount(),
+                     summary.getSum(),
+                     summary.getAverage(),
+                     summary.getMin(),
+                     summary.getMax());
+
+            log.info("Estatisca gerada com sucesso");
              return estatisticaDTO;
+
+
 
 
     }
